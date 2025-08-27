@@ -2,7 +2,6 @@ import React from 'react';
 import '../../styles/todo.scss';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
-import { TodoLoader } from '../Loader/TodoLoader';
 
 type Props = {
   tempTodo: Omit<Todo, 'userId'>;
@@ -13,9 +12,6 @@ export const TempTodoItem: React.FC<Props> = ({
   tempTodo,
   isLoadingSpinner,
 }) => {
-  // const isNewTodo = lastNewTodoId === todo.id;
-  const isNewTodo = true;
-
   return (
     <>
       <div
@@ -30,6 +26,7 @@ export const TempTodoItem: React.FC<Props> = ({
             className="todo__status"
             checked={tempTodo.completed}
             onChange={() => {}}
+            aria-label="Mark todo as completed"
           />
         </label>
 

@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import '../../styles/todo.scss';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
@@ -28,6 +27,7 @@ export const TodoItem: React.FC<Props> = ({
             className="todo__status"
             checked={todo.completed}
             onChange={() => {}}
+            aria-label="Mark todo as completed"
           />
         </label>
 
@@ -49,7 +49,6 @@ export const TodoItem: React.FC<Props> = ({
           data-cy="TodoLoader"
           className={cn('modal', 'overlay', {
             'is-active': listDeleteTodoId.includes(todo.id),
-            // isLoadingSpinner && deletedTodoId === todo.id,
           })}
         >
           <div className="modal-background has-background-white-ter" />

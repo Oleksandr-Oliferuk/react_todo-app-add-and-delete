@@ -12,7 +12,7 @@ export const createTodos = ({ title, completed, userId }: Omit<Todo, 'id'>) => {
 };
 
 export const deleteTodos = (todoId: number) => {
-  return client.delete<number>(`/todos/${todoId}`);
+  return client.delete(`/todos/${todoId}`);
 };
 
 // Add more methods here

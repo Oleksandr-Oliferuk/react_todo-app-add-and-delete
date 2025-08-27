@@ -32,32 +32,31 @@ function preperedData(dataTodos: Todo[], groupBy: string): Todo[] {
 export const App: React.FC = () => {
   const [todosDataFromServer, setodosDataFromServer] = useState<Todo[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [loadingStartWindow, setLoadingStartWindow] = useState<boolean>(false); // use with footer and list when starting window
+  const [loadingStartWindow, setLoadingStartWindow] = useState<boolean>(false);
   const [groupBy, setGroupBy] = useState<TodoFilter>(TodoFilter.All);
   const [isFocusHeaderInput, setIsFocusHeaderInput] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>('');
   const [isLoadingSpinner, setIsLoadingSpinner] = useState<boolean>(false);
   const [tempTodo, setTempTodo] = useState<Omit<Todo, 'userId'> | null>(null);
   const [listDeleteTodoId, setListDeleteTodoId] = useState<number[]>([]);
+
   const visibleData = preperedData(todosDataFromServer, groupBy);
 
-  useEffect(() => {
+  const loadTodos = () => {
     setErrorMessage('');
     setLoadingStartWindow(true);
     getTodos()
       .then((todosFromServer: Todo[]) => {
         setodosDataFromServer(todosFromServer);
-        // console.log(todosFromServer);
       })
       .catch(() => setErrorMessage('Unable to load todos'))
       .finally(() => setLoadingStartWindow(false));
-  }, []);
+  };
 
-  // analyze state error and autoclose after  appearance for 3s
-  useEffect(() => {
+  const errorTimeOut = (errorNotification: string) => {
     let timerId: NodeJS.Timeout | number | undefined;
 
-    if (errorMessage) {
+    if (errorNotification) {
       timerId = setTimeout(() => {
         setErrorMessage('');
       }, 3000);
@@ -68,13 +67,12 @@ export const App: React.FC = () => {
         clearTimeout(timerId);
       }
     };
-  }, [errorMessage]);
+  };
 
   const handleGroupBy = (typeGroupBy: TodoFilter) => {
     setGroupBy(typeGroupBy);
   };
 
-  // this handler analyze if input is empty and set error after submit
   const handleEmptyInputError = () => {
     if (inputValue.trim().length === 0) {
       setErrorMessage('Title should not be empty');
@@ -83,8 +81,6 @@ export const App: React.FC = () => {
     }
   };
 
-  // function which add new Todos to Server
-
   function addTodo({ title, completed }: Omit<Todo, 'id' | 'userId'>) {
     setErrorMessage('');
     setIsFocusHeaderInput(false);
@@ -92,21 +88,18 @@ export const App: React.FC = () => {
     createTodos({ title, completed, userId: USER_ID })
       .then(newTodo => {
         setInputValue('');
-        setIsFocusHeaderInput(true);
         setodosDataFromServer(prevTodos => [...prevTodos, newTodo]);
-        setIsLoadingSpinner(false);
         setTempTodo(null);
       })
       .catch(() => {
         setErrorMessage('Unable to add a todo');
-        setIsFocusHeaderInput(true);
       })
       .finally(() => {
+        setIsLoadingSpinner(false);
+        setIsFocusHeaderInput(true);
         setTempTodo(null);
       });
   }
-
-  //function which delete Todo
 
   function removeTodo(todoId: number) {
     setListDeleteTodoId(prev => [...prev, todoId]);
@@ -118,20 +111,17 @@ export const App: React.FC = () => {
         setodosDataFromServer(prevTodos =>
           prevTodos.filter(todo => todo.id !== todoId),
         );
-        setIsFocusHeaderInput(true);
-        setIsLoadingSpinner(false);
         setListDeleteTodoId([]);
       })
       .catch(() => {
         setErrorMessage('Unable to delete a todo');
-        // setIsFocusHeaderInput(true);
       })
       .finally(() => {
-        setListDeleteTodoId(prev => prev.filter(id => id !== todoId));
+        setIsLoadingSpinner(false);
+        setIsFocusHeaderInput(true);
       });
   }
 
-  // handler which delete only All copmleted Todos
   const handleDeleteAllCompleted = () => {
     const completedTodos = todosDataFromServer.filter(
       todo => todo.completed === true,
@@ -144,15 +134,10 @@ export const App: React.FC = () => {
     setInputValue(event);
   };
 
-  // handle use when we add tempTodo and show it befor requiest on SERVER
   const handleTempTodo = (temporaryTodo: Omit<Todo, 'userId'>) => {
     setTempTodo(temporaryTodo);
-    // setTimeout(() => {
-    //   setIsLoadingSpinner(false);
-    // }, 300);
   };
 
-  // analyse if full todos are Completed, it's need for button in Header
   const isFullTodosCompleted = useMemo(() => {
     return todosDataFromServer.every((todo: Todo) => todo.completed === true);
   }, [todosDataFromServer]);
@@ -165,8 +150,15 @@ export const App: React.FC = () => {
     return todosDataFromServer.filter(todo => !todo.completed).length;
   }, [todosDataFromServer]);
 
-  //isShowElement analyze that we not loadWindow and count arr of todos > 0;
   const isShowElement = !loadingStartWindow && todosDataFromServer.length > 0;
+
+  useEffect(() => {
+    loadTodos();
+  }, []);
+
+  useEffect(() => {
+    errorTimeOut(errorMessage);
+  }, [errorMessage]);
 
   if (!USER_ID) {
     return <UserWarning />;
@@ -203,7 +195,7 @@ export const App: React.FC = () => {
         {isShowElement && (
           <Footer
             completedCount={completedCount}
-            handleGroupBy={handleGroupBy}
+            onHandleGroupBy={handleGroupBy}
             groupBy={groupBy}
             isOneTodosCompleted={isOneTodosCompleted}
             onClickDeleteAllCompleted={handleDeleteAllCompleted}

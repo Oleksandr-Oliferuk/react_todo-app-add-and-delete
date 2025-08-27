@@ -5,7 +5,7 @@ import cn from 'classnames';
 
 type Props = {
   completedCount: number;
-  handleGroupBy: (typeGroupBy: TodoFilter) => void;
+  onHandleGroupBy: (typeGroupBy: TodoFilter) => void;
   groupBy: TodoFilter;
   isOneTodosCompleted: boolean;
   onClickDeleteAllCompleted: () => void;
@@ -13,7 +13,7 @@ type Props = {
 
 export const Footer: React.FC<Props> = ({
   completedCount,
-  handleGroupBy,
+  onHandleGroupBy,
   groupBy,
   isOneTodosCompleted,
   onClickDeleteAllCompleted,
@@ -32,7 +32,7 @@ export const Footer: React.FC<Props> = ({
             selected: groupBy === TodoFilter.All,
           })}
           data-cy="FilterLinkAll"
-          onClick={() => handleGroupBy(TodoFilter.All)}
+          onClick={() => onHandleGroupBy(TodoFilter.All)}
         >
           All
         </a>
@@ -43,7 +43,7 @@ export const Footer: React.FC<Props> = ({
             selected: groupBy === TodoFilter.Active,
           })}
           data-cy="FilterLinkActive"
-          onClick={() => handleGroupBy(TodoFilter.Active)}
+          onClick={() => onHandleGroupBy(TodoFilter.Active)}
         >
           Active
         </a>
@@ -53,23 +53,23 @@ export const Footer: React.FC<Props> = ({
             selected: groupBy === TodoFilter.Completed,
           })}
           data-cy="FilterLinkCompleted"
-          onClick={() => handleGroupBy(TodoFilter.Completed)}
+          onClick={() => onHandleGroupBy(TodoFilter.Completed)}
         >
           Completed
         </a>
       </nav>
 
       {/* this button should be disabled if there are no completed todos */}
-      {isOneTodosCompleted && (
-        <button
-          type="button"
-          className="todoapp__clear-completed"
-          data-cy="ClearCompletedButton"
-          onClick={onClickDeleteAllCompleted}
-        >
-          Clear completed
-        </button>
-      )}
+
+      <button
+        type="button"
+        className="todoapp__clear-completed"
+        data-cy="ClearCompletedButton"
+        disabled={!isOneTodosCompleted}
+        onClick={onClickDeleteAllCompleted}
+      >
+        Clear completed
+      </button>
     </footer>
   );
 };
